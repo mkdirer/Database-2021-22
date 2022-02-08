@@ -1,0 +1,34 @@
+#include <stdio.h>
+
+char * p_dbase = "u9wajda@localhost:5432";
+char * p_user = "u9wajda";
+char * p_pass = "9wajda";
+
+int id = 5;
+char * mail = "nowy@fis.agh.edu.pl";
+
+EXEC SQL BEGIN DECLARE SECTION;
+	char connection_string[128];
+	char user[64];
+	char password[32];
+
+    int idc;
+    char new_email[50];
+EXEC SQL END DECLARE SECTION;
+
+int main()
+{
+    strcpy(connection_string, p_dbase);
+    strcpy(user, p_user);
+    strcpy(password, p_pass);
+
+    int idc = id;
+    strcpy(new_email, mail);
+
+    EXEC SQL CONNECT TO :connection_string AS conn  USER :user USING :password;
+
+    EXEC SQL UPDATE lab04.uczestnik set email=:new_email WHERE id_uczestnik=:idc;
+
+    EXEC SQL DISCONNECT ALL;
+    return 0;
+}

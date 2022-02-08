@@ -1,0 +1,49 @@
+#include <stdio.h>
+
+char * dbase = "u9wajda@localhost:5432";
+char * user = "u9wajda";
+char * pass = "9wajda";
+
+EXEC SQL BEGIN DECLARE SECTION;
+    char dbname[128];
+    char catalog[128];
+    char query[128];
+    char schema[128];
+    char cuser[128];
+    int cport;
+
+    char db[40];
+    char usr[32];
+    char pas[32];
+EXEC SQL END DECLARE SECTION;
+
+int main()
+{
+	
+    strncpy(db,dbase,40);
+    strncpy(usr,user,32);
+    strncpy(pas,pass,32);
+    EXEC SQL CONNECT TO :db AS conn  USER :usr USING :pas;
+
+    EXEC SQL SELECT current_database() INTO :dbname;
+    printf("current database=%s \n", dbname);
+
+    EXEC SQL SELECT current_catalog INTO :catalog;
+    printf("current catalog=%s \n", catalog);
+
+    EXEC SQL SELECT current_query() INTO :query;
+    printf("current query=%s \n", query);
+
+    EXEC SQL SELECT current_schema() INTO :schema;
+    printf("current schema=%s \n", schema);
+
+    EXEC SQL SELECT current_user INTO :cuser;
+    printf("current user=%s \n", cuser);
+
+    EXEC SQL SELECT inet_client_port() INTO :cport;
+    printf("client port=%d", cport); 
+
+
+    EXEC SQL DISCONNECT ALL;
+    return 0;
+}

@@ -1,0 +1,2 @@
+with cte as (select ship_mode, region, sum(shipping_cost) as shipcost from sample group by ship_mode, region)
+select ship_mode, region, row_number() over (order by shipcost desc), DENSE_RANK() over (order by shipcost desc), shipcost, sum(shipcost) over (partition by region order by region) from cte order by ROW_NUMBER;

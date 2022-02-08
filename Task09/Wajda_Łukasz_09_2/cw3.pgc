@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <iostream>
+#include <string.h>
+#include <stdlib.h>
+
+char * p_dbase = "u9wajda@localhost:5432";
+char * p_user = "u9wajda";
+char * p_pass = "9wajda";
+
+char * kurs = "angielski";
+
+EXEC SQL BEGIN DECLARE SECTION;
+	char dbname[1024];
+	char connection_string[128];
+	char user[64];
+	char password[32];
+
+	char fname[64];
+	char lname[64];
+    char opis[64];
+    char param[64];
+EXEC SQL END DECLARE SECTION;
+
+EXEC SQL WHENEVER NOT FOUND DO BREAK;
+ 
+static void crash(void)
+{
+    EXEC SQL WHENEVER SQLERROR CONTINUE;
+ 
+    fprintf(
+        stderr,
+        "database serious error %s:\n%s\n",
+        sqlca.sqlstate,
+        sqlca.sqlerrm.sqlerrmc
+    );
+ 
+    EXEC SQL ROLLBACK;
+    EXEC SQL DISCONNECT;
+ 
+    exit(1);
+ 
+    EXEC SQL WHENEVER SQLERROR CALL crash();
+}
+
+int main()
+{
+	std::cout << "Postgres Embeded SQL Application" << std::endl << std::endl;
+	
+	strcpy(connection_string,p_dbase);
+	strcpy(user,p_user);
+	strcpy(password,p_pass);
+    
+    strcpy(param,"%");
+    strcat(param,kurs);
+    strcat(param,"%");
+
+    EXEC SQL DECLARE cur_uczestnik CURSOR FOR SELECT u.nazwisko, u.imie, ko.opis 
+        FROM lab04.uczestnik u 
+        JOIN lab04.uczest_kurs uk ON u.id_uczestnik=uk.id_uczest 
+        JOIN lab04.kurs k USING (id_kurs) 
+        JOIN lab04.kurs_opis ko ON k.id_kurs=ko.id_kurs 
+        WHERE ko.opis LIKE lower(:param);
+
+	EXEC SQL CONNECT TO :connection_string AS conn  USER :user USING :password;
+
+    EXEC SQL OPEN cur_uczestnik;
+ 
+	for(;;)
+	{
+	    EXEC SQL FETCH NEXT FROM cur_uczestnik INTO :fname, :lname, :opis;
+ 		std::cout << fname << "  " << lname << "  " << opis <<std::endl;
+	}
+ 
+	EXEC SQL CLOSE cur_uczestnik;
+
+	
+	EXEC SQL DISCONNECT ALL;
+	return 0;
+}
